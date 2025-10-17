@@ -1,0 +1,32 @@
+```ts
+import { Configuration, OpenAIApi } from "openai";
+import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
+const openai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }));
+
+/**
+ * Minimal suggestSolution implementation for prototype.
+ * Steps:
+ * 1) Optionally call a vector DB to find similar tickets (omitted in minimal prototype)
+ * 2) Send a clear prompt to the LLM with the ticket description
+ */
+export async function suggestSolution(ticketDescription: string) {
+  const prompt = `You are a support assistant. Given the user ticket below, suggest the most likely solution steps, and a short summary (2-3 bullets).\n\nTicket:\n"""\n${ticketDescription}\n"""\n\nRespond with JSON: { "summary": string, "steps": [string] }`;
+
+  const resp = await openai.createChatCompletion({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: 400
+  } as any);
+
+  const text = resp.data.choices?.[0]?.message?.content ?? "";
+  try {
+    // Try to parse JSON, but fallback to raw text
+    return JSON.parse(text);
+  } catch (e) {
+    return { raw: text };
+  }
+}
+```

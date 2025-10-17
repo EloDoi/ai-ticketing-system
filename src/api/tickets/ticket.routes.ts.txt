@@ -1,0 +1,11 @@
+```ts
+import express from "express";
+import { createTicketHandler, getTicketHandler } from "./ticket.controller";
+
+const router = express.Router();
+
+router.post("/", createTicketHandler);
+router.get("/:id", getTicketHandler);
+
+export default router;
+```

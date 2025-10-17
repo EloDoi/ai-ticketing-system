@@ -1,0 +1,47 @@
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  role      String
+  password  String
+  tickets   Ticket[] @relation("createdBy")
+  assigned  Ticket[] @relation("assignedTo")
+  createdAt DateTime @default(now())
+}
+
+model Ticket {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  status      String   @default("open")
+  priority    String   @default("medium")
+  createdById Int
+  assignedToId Int?
+  createdBy   User     @relation("createdBy", fields: [createdById], references: [id])
+  assignedTo  User?    @relation("assignedTo", fields: [assignedToId], references: [id])
+  messages    Message[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  isAI      Boolean  @default(false)
+  senderId  Int
+  ticketId  Int?
+  createdAt DateTime @default(now())
+  sender    User     @relation(fields: [senderId], references: [id])
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id])
+}
+```

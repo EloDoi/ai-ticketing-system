@@ -1,0 +1,32 @@
+```ts
+import { Request, Response } from "express";
+import { prisma } from "../../prisma/client";
+import { suggestSolution } from "../ai/suggestSolution";
+
+export async function createTicketHandler(req: Request, res: Response) {
+  const { title, description, createdById } = req.body;
+  if (!title || !description || !createdById) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  const ticket = await prisma.ticket.create({
+    data: { title, description, createdById }
+  });
+
+  // Call the AI helper to get a suggestion (async, but we'll return suggestion for the prototype)
+  try {
+    const suggestion = await suggestSolution(description);
+    return res.status(201).json({ ticket, aiSuggestion: suggestion });
+  } catch (err) {
+    console.error("AI suggestion failed", err);
+    return res.status(201).json({ ticket, aiSuggestion: null });
+  }
+}
+
+export async function getTicketHandler(req: Request, res: Response) {
+  const id = Number(req.params.id);
+  const ticket = await prisma.ticket.findUnique({ where: { id }, include: { messages: true } });
+  if (!ticket) return res.status(404).json({ error: "Not found" });
+  res.json(ticket);
+}
+```

@@ -1,0 +1,10 @@
+```ts
+import express from "express";
+import { recommendImprovementsHandler } from "./recommendImprovements";
+
+const router = express.Router();
+
+router.post("/recommend", recommendImprovementsHandler);
+
+export default router;
+```
